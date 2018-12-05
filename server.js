@@ -10,7 +10,8 @@ const express = require('express'),
     methodOverride = require('method-override'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
-    errorhandler = require('errorhandler');
+    errorhandler = require('errorhandler'),
+    PageController = require('./controllers/Page');
 
 
 const upload = multer({ dest: 'public/images/' });
@@ -24,7 +25,7 @@ app.use(bodyParser());
 app.use(methodOverride());
 app.use(cookieParser('it-portal'));
 app.use(session());
-app.use(require('less-middleware')({ src: __dirname + '/public' }));
+app.use(require('less-middleware')(__dirname + '/public'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
@@ -32,16 +33,16 @@ if ('development' === app.get('env')) {
     app.use(errorhandler());
 }
 
-MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port + '/fastdelivery', function(err, db) {
+MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port + '', function(err, db) {
     if(err) {
         console.log('Sorry, there is no mongo db server running.');
     } else {
         const attachDB = function(req, res, next) {
-            req.db = db;
+            req.db = db.db('it_portal');
             next();
         };
-        app.all('/', attachDB, function(req, res, next) {
-            res.render('base', {title: "lol", rootPages: [{id: 1, pageName: "lOL"}]});
+        app.all('/:id', attachDB, function(req, res, next) {
+            PageController.run(req, res, next);
         });
         app.listen(config.port, function() {
             console.log(
