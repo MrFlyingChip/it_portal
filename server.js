@@ -44,6 +44,12 @@ MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port +
         app.all('/:id', attachDB, function(req, res, next) {
             PageController.run(req, res, next);
         });
+        app.all('/', attachDB, function(req, res, next) {
+            PageController.runRoot(req, res, next);
+        });
+        app.all('/id', attachDB, function(req, res, next) {
+            PageController.run(req, res, next);
+        });
         app.listen(config.port, function() {
             console.log(
                 'Successfully connected to mongodb://' + config.mongo.host + ':' + config.mongo.port,

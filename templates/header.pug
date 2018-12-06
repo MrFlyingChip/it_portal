@@ -1,5 +1,14 @@
-header(class="")
-    p(class="") IT Portal
-    nav(class="")
-        each item in rootPages
-            a(href=item.id class="") #{item.pageName}
+nav(class="navbar navbar-expand-lg navbar-dark bg-dark")
+    a(class="navbar-brand" href="/") IT Portal
+    button(class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation")
+        <span class="navbar-toggler-icon"></span>
+    div(class="collapse navbar-collapse" id="navbarNav")
+        if rootPages
+            ul(class="navbar-nav")
+                each item in rootPages
+                    li(class="nav-item active")
+                        a(class="nav-link" href=item.ID) #{rootPages.pageName}
+            if(auth && role === 'ADMIN')
+                <a class="navbar-text nav-link" href="/login">Admin</a>
+            else
+                <a class="navbar-text nav-link" href="/login">Log In/Sign Up</a>
