@@ -13,9 +13,6 @@ module.exports.prototype = {
     setDB: function(db) {
         this.db = db;
     },
-    setModelName: function(modelName){
-        this.modelName = modelName;
-    },
     collection: function() {
         if(this._collection) return this._collection;
         return this._collection = this.db.collection(this.modelName);

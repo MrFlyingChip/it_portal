@@ -41,15 +41,19 @@ MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port +
             req.db = db.db('it_portal');
             next();
         };
+        app.get('/login', attachDB, function (req, res) {
+            res.render('loginPage', {});
+        });
+        app.post('/sighup', attachDB, function (req, res) {
+            console.log(req.body);
+        });
         app.all('/:id', attachDB, function(req, res, next) {
             PageController.run(req, res, next);
         });
         app.all('/', attachDB, function(req, res, next) {
             PageController.runRoot(req, res, next);
         });
-        app.all('/id', attachDB, function(req, res, next) {
-            PageController.run(req, res, next);
-        });
+
         app.listen(config.port, function() {
             console.log(
                 'Successfully connected to mongodb://' + config.mongo.host + ':' + config.mongo.port,

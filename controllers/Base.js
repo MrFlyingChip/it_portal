@@ -11,9 +11,7 @@ module.exports = {
 
     },
     render: function (req, res, content) {
-        const self = this;
         model.setDB(req.db);
-        model.setModelName('pages');
         model.getOneItemName('root', function (err, rootPage) {
             model.getlist(function(err, records) {
                 content.rootPages = records;

@@ -6,17 +6,15 @@ module.exports = BaseController.extend({
     content: null,
     run: function(req, res, next) {
         model.setDB(req.db);
-        model.setModelName('pages');
         let self = this;
         this.checkForRootPage(() => {
             this.getContent(req.params['id'], function() {
-                BaseController.render(res, self.content);
+                BaseController.render(req, res, self.content);
             });
         });
     },
     runRoot: function(req, res, next){
         model.setDB(req.db);
-        model.setModelName('pages');
         this.checkForRootPage(() => {
             model.getOneItemName('root', function (err, rootPage) {
                 BaseController.render(req, res, rootPage);

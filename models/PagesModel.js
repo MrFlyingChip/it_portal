@@ -2,6 +2,8 @@ const Model = require("./Base"),
     crypto = require("crypto"),
     model = new Model();
 const PagesModel = model.extend({
+    modelName: 'pages',
+
     insert: function(data, callback) {
         data.ID = crypto.randomBytes(20).toString('hex');
         this.collection().insert(data, callback || function(){ });
