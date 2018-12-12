@@ -65,11 +65,20 @@ MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port +
         app.post('/sighup', attachDB, function (req, res, next) {
             UserController.signUp(req, res, next);
         });
+        app.get('/account', attachDB, function (req, res) {
+            PageController.accountPage(req, res);
+        });
         app.get('/:id/add', attachDB, function(req, res, next) {
             PageController.addPage(req, res, next, false);
         });
         app.post('/:id/add', upload.single('pageImage'), attachDB, function(req, res, next) {
             PageController.addPage(req, res, next, true);
+        });
+        app.get('/:id/update', attachDB, function(req, res, next) {
+            PageController.updatePage(req, res, next, false);
+        });
+        app.post('/:id/update', upload.single('pageImage'), attachDB, function(req, res, next) {
+            PageController.updatePage(req, res, next, true);
         });
         app.post('/:root/delete/:id', attachDB, function(req, res, next) {
             PageController.deletePage(req, res, next);

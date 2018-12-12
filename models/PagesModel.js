@@ -11,7 +11,7 @@ const PagesModel = {
         this.collection().findOne(data, callback || function () { });
     },
     update: function(data, callback) {
-        this.collection().update({ID: data.ID}, data, callback || function(){ });
+        this.collection().updateOne({ID: data.ID}, data, callback || function(){ });
     },
     getlist: function(callback, query) {
         this.collection().find(query || {}).toArray(callback || function(){ });

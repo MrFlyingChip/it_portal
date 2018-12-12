@@ -1,0 +1,29 @@
+extends base.pug
+block content
+    p
+        if role === "ADMIN"
+            a(href="/admin/" + ID) <- Back
+        else
+            a(href="/" + ID) <- Back
+    form(method="post" action="/" + ID + "/update" enctype="multipart/form-data")
+        h3 Update page
+        div(class="form-group")
+            label(for="inputPageName") Page Name
+            input(type="text" class="form-control" id="inputPageName" placeholder="Enter page name" name="pageName" value=pageName required)
+        div(class="form-group")
+            label(for="inputPagePhoto") Page Image
+            img(class="img-card" src="/images/" + pageImage alt=pageName)
+            input(type="file" class="form-control-file" id="inputPagePhoto" placeholder="Input page image" name="pageImage")
+        select(class="form-control form-control-sm" name="parentID")
+            each item in containers
+                if parentID === item.ID
+                    option(value=item.ID selected) #{item.pageName}
+                else
+                    option(value=item.ID) #{item.pageName}
+        div(class="form-group")
+            label(for="inputPageSmallText") Page Small Text
+            textarea(class="form-control" id="inputPageSmallText" rows="2" required name="pageSmallText" placeholder="Input page small text") #{pageSmallText}
+        div(class="form-group")
+            label(for="inputPageText") Page Text
+            textarea(class="form-control" id="inputPageText" rows="6" required name="pageText" placeholder="Input page text") #{pageText}
+        button(type="submit" class="btn btn-primary") Update page

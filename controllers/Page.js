@@ -98,6 +98,41 @@ module.exports = BaseController.extend({
            }
         });
     },
+    updatePage: function (req, res, next, post) {
+        model.setDB(req.db);
+        let self = this;
+        this.checkForRootPage(() => {
+            if(post){
+                if(!req.body || !req.session || !req.session.username) res.redirect('/');
+                const page = req.body;
+                if(req.file){
+                    page.pageImage = req.file.originalname;
+                }
+                page.ID = req.params['id'];
+                model.update(page, function (err, newPage) {
+                    if(req.session.role === "ADMIN"){
+                        res.redirect('/admin/' + page.ID);
+                    } else {
+                        res.redirect('/' + page.ID);
+                    }
+                });
+            } else {
+                model.getOneItem({ID: req.params['id']}, function (error, pageUpd) {
+                    if(pageUpd){
+                        model.getlist(function(err, records) {
+                            pageUpd.pageType = 'updatePage';
+                            pageUpd.title = 'Update Page';
+                            pageUpd.containers = records;
+                            BaseController.render(req, res, pageUpd);
+                        }, {ID: pageUpd.parentID});
+                    } else {
+                        res.redirect('/');
+                    }
+                });
+
+            }
+        });
+    },
     deletePage: function (req, res, next) {
         model.setDB(req.db);
         this.checkForRootPage(() => {
@@ -122,5 +157,20 @@ module.exports = BaseController.extend({
                BaseController.render(req, res, page);
            }
         });
-    }
+    },
+    accountPage: function (req, res, next) {
+        model.setDB(req.db);
+        this.checkForRootPage(() => {
+            if(!req.session || !req.session.username){
+                res.redirect('/');
+            } else {
+                const page = {pageType: 'container', title: 'Account', pageName: 'Account'};
+                model.getlist(function(err, records) {
+                    page.children = records;
+                    BaseController.render(req, res, page);
+                }, { created: req.session.username });
+
+            }
+        });
+    },
 });
