@@ -7,3 +7,12 @@ form{
     width: 50%;
     margin: 0 auto;
 }
+
+.img-card{
+    height: 200px;
+}
+
+p{
+    font-size: 14pt;
+    font-weight: normal;
+}

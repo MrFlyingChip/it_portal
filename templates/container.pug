@@ -1,3 +1,17 @@
 extends base.pug
 block content
-    p lol
+    if (parentID)
+        p
+            a(href="/" + parentID) <- Back
+    h3 #{pageName}
+    div(class="card-columns")
+        each item in children
+            div(class="card")
+                img(class="card-img-top" src="/images/" + item.pageImage alt=item.pageName)
+                div(class="card-body")
+                    h5(class="card-title")
+                        a(href='/' + item.ID) #{item.pageName}
+                        p(class="card-text") #{item.pageSmallText}
+                if item.likes > 0
+                    div(class="card-footer")
+                        small(class="text-muted") Likes: #{item.likes}

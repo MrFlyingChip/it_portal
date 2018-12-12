@@ -1,27 +1,31 @@
 extends base.pug
 block content
     form(method="post" action="/sighup")
-        h3 Sign In
+        h3 Sign Up
         div(class="form-group")
             label(for="inputEmailSignIn") Email address
-            input(type="email" class="form-control" id="inputEmailSignIn" aria-describedby="emailHelp" placeholder="Enter email" name="email" required)
+            input(type="email" class="form-control"+((errorSignUpEmail) ? " is-invalid" : " ") id="inputEmailSignIn" aria-describedby="emailHelp" placeholder="Enter email" name="email" required)
             small(id="emailHelp" class="form-text text-muted") We'll never share your email with anyone else.
+            div(class="invalid-feedback") #{errorSignUpEmail}
         div(class="form-group")
             label(for="inputUsernameSignIn") Username
-            input(type="text" class="form-control" id="inputUsernameSignIn" placeholder="Enter username" name="username" required)
+            input(type="text" class="form-control"+((errorSignUpUsername) ? " is-invalid" : " ") id="inputUsernameSignIn" placeholder="Enter username" name="username" required)
+            div(class="invalid-feedback") #{errorSignUpUsername}
         div(class="form-group")
             label(for="inputPasswordSignIn") Password
             input(type="password" class="form-control" id="inputPasswordSignIn" placeholder="Password" name="password" required)
         button(type="submit" class="btn btn-primary") Sign In
 
-    form
+    form(method="post" action="/login")
         h3 Log In
         div(class="form-group")
             label(for="inputUsernameLogin") Username
-            input(type="text" class="form-control" id="inputUsernameLogin" placeholder="Enter username" name="username" required)
+            input(type="text" class="form-control"+((errorLogInUsername) ? " is-invalid" : " ") id="inputUsernameLogin" placeholder="Enter username" name="username" required)
+            div(class="invalid-feedback") #{errorLogInUsername}
         div(class="form-group")
             label(for="inputPasswordLogin") Password
-            input(type="password" class="form-control" id="inputPasswordLogin" placeholder="Password" name="password" required)
+            input(type="password" class="form-control"+((errorLogInPassword) ? " is-invalid" : " ") id="inputPasswordLogin" placeholder="Password" name="password" required)
+            div(class="invalid-feedback") #{errorLogInPassword}
         div(class="form-group form-check")
             input(type="checkbox" class="form-check-input" id="checkMeOutLogin")
             label(class="form-check-label" for="checkMeOutLogin") Check me out

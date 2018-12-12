@@ -1,49 +1,126 @@
 const BaseController = require("./Base"),
-    model = new (require("../models/PagesModel"));
+    model = (require("../models/PagesModel"));
 
 module.exports = BaseController.extend({
     name: "Page",
     content: null,
-    run: function(req, res, next) {
+    modelName: "pages",
+    run: function(req, res, next, root, admin) {
         model.setDB(req.db);
         let self = this;
         this.checkForRootPage(() => {
-            this.getContent(req.params['id'], function() {
-                BaseController.render(req, res, self.content);
-            });
-        });
-    },
-    runRoot: function(req, res, next){
-        model.setDB(req.db);
-        this.checkForRootPage(() => {
-            model.getOneItemName('root', function (err, rootPage) {
-                BaseController.render(req, res, rootPage);
-            });
+            if(admin && root){
+                if(!req.session || !req.session.role || req.session.role !== "ADMIN"){
+                    res.redirect('/');
+                }
+                this.getContent({pageName: 'Home'}, function() {
+                    if(self.content) self.content.pageType += "Admin";
+                    self.content.title = "Admin";
+                    BaseController.render(req, res, self.content);
+                });
+            } else if(admin){
+                if(!req.session || !req.session.role || req.session.role !== "ADMIN"){
+                    res.redirect('/');
+                }
+                console.log(req.params['id']);
+                this.getContent({ID: req.params['id']}, function() {
+                    if(self.content) self.content.pageType += "Admin";
+                    self.content.title = "Admin";
+                    BaseController.render(req, res, self.content);
+                });
+            }else if(root && !admin){
+                this.getContent({pageName: 'Home'}, function() {
+                    self.content.title = self.content.pageName;
+                    BaseController.render(req, res, self.content);
+                });
+            } else {
+                this.getContent({ID: req.params['id']}, function() {
+                    self.content.title = self.content.pageName;
+                    BaseController.render(req, res, self.content);
+                });
+            }
         });
     },
     checkForRootPage: function(callback){
-        model.getOneItemName('root', function (err, rootPage) {
+        const root = {pageName: 'Home'};
+        model.getOneItem(root, function (err, rootPage) {
             if(!rootPage){
-                model.insert({pageName: 'root'}, callback);
+                model.insert({pageName: 'Home', pageType: "container"}, callback);
+            } else {
+                callback();
             }
-            callback();
         });
     },
-    getContent: function(pageID, callback) {
+    getContent: function(obj, callback) {
         let self = this;
         this.content = {};
-        model.getOneItemID(pageID, function (error, page) {
-            if(page === null){
+        model.getOneItem(obj, function (error, page) {
+            if(!page){
                 callback();
-            } else if(page.type === 'container'){
+            } else if(page.pageType === 'container'){
                model.getlist(function(err, records) {
-                   self.content = {page: page, children: records};
+                   console.log(obj);
+                   self.content = page;
+                   self.content.children = records;
                    callback();
-               }, { parentID: pageID });
-           } else if(page.type === 'page'){
-               self.content = {page: page};
+               }, { parentID: page.ID });
+           } else if(page.pageType === 'page'){
+                self.content = page;
+                callback();
+           } else {
+                callback();
+            }
+        });
+    },
+
+    addPage: function (req, res, next, post) {
+        model.setDB(req.db);
+        let self = this;
+        this.checkForRootPage(() => {
+           if(post){
+                if(!req.body || !req.session || !req.session.username) res.redirect('/');
+                const page = req.body;
+                page.creator = req.session.username;
+                page.date = Date.now();
+                page.parentID = req.params['id'];
+                page.likes = 0;
+                page.pageImage = req.file.originalname;
+                model.insert(page, function (err, newPage) {
+                    if(req.session.role === "ADMIN"){
+                        res.redirect('/admin/' + newPage.ops[0].ID);
+                    } else {
+                        res.redirect('/' + newPage.ops[0].ID);
+                    }
+                });
+           } else {
+               const page = {pageType: 'addPage', title: 'Add Page', parentID: req.params['id']};
+               BaseController.render(req, res, page);
            }
         });
-
+    },
+    deletePage: function (req, res, next) {
+        model.setDB(req.db);
+        this.checkForRootPage(() => {
+            if(!req.body || !req.session || !req.session.username) res.redirect('/');
+            model.remove(req.params['id'], function (err, newPage) {
+                if(req.session.role === "ADMIN"){
+                    res.redirect('/admin/' + req.params['root']);
+                } else {
+                    res.redirect('/' + req.params['root']);
+                }
+            });
+        });
+    },
+    loginPage: function (req, res, next) {
+        model.setDB(req.db);
+        let self = this;
+        this.checkForRootPage(() => {
+           if(req.session && req.session.username){
+               res.redirect('/');
+           } else {
+               const page = {pageType: 'loginPage', title: 'Add Page'};
+               BaseController.render(req, res, page);
+           }
+        });
     }
 });

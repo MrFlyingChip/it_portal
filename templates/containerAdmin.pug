@@ -1,0 +1,28 @@
+extends base.pug
+block content
+    if (parentID)
+        p
+            a(href="/admin/" + parentID) <- Back
+    p
+        a(href="/" + ID + "/add") Add new page
+    p
+        a(href="/" + ID + "/update") Update this page
+    table(class="table")
+        thead
+            tr
+                th(scope="col") #
+                th(scope="col") Name
+                th(scope="col") Type
+                th(scope="col") Likes
+                th(scope="col") Actions
+        tbody
+            each page in children
+                tr
+                    th(scope="row") #{page.ID}
+                    td
+                        a(href='/admin/' + page.ID) #{page.pageName}
+                    td #{page.pageType}
+                    td #{page.likes}
+                    td
+                        form(method="post" action="/" + ID + "/delete/" + page.ID)
+                            button(type="submit" class="btn btn-primary") Delete

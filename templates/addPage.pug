@@ -1,0 +1,26 @@
+extends base.pug
+block content
+    if (parentID)
+        p
+            if role === "ADMIN"
+                a(href="/admin/" + parentID) <- Back
+            else
+                a(href="/" + parentID) <- Back
+    form(method="post" action="/" + parentID + "/add" enctype="multipart/form-data")
+        h3 Add page
+        div(class="form-group")
+            label(for="inputPageName") Page Name
+            input(type="text" class="form-control" id="inputPageName" placeholder="Enter page name" name="pageName" required)
+        div(class="form-group")
+            label(for="inputPagePhoto") Page Image
+            input(type="file" class="form-control-file" id="inputPagePhoto" placeholder="Input page image" name="pageImage" required)
+        select(class="form-control form-control-sm" name="pageType")
+            option container
+            option page
+        div(class="form-group")
+            label(for="inputPageSmallText") Page Small Text
+            textarea(class="form-control" id="inputPageSmallText" rows="2" required name="pageSmallText" placeholder="Input page small text")
+        div(class="form-group")
+            label(for="inputPageText") Page Text
+            textarea(class="form-control" id="inputPageText" rows="6" required name="pageText" placeholder="Input page text")
+        button(type="submit" class="btn btn-primary") Add page

@@ -11,10 +11,18 @@ const express = require('express'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
     errorhandler = require('errorhandler'),
-    PageController = require('./controllers/Page');
+    PageController = require('./controllers/Page'),
+    UserController = require('./controllers/User');
 
-
-const upload = multer({ dest: 'public/images/' });
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/images/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname)
+    }
+});
+const upload = multer({ storage: storage });
 // all environments
 // app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/templates');
@@ -41,19 +49,46 @@ MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port +
             req.db = db.db('it_portal');
             next();
         };
+        app.get('/404', attachDB, function (req, res) {
+            res.redirect('/');
+        });
+        app.get('/logout', attachDB, function (req, res) {
+            req.session.destroy();
+            res.redirect('/');
+        });
         app.get('/login', attachDB, function (req, res) {
-            res.render('loginPage', {});
+            PageController.loginPage(req, res);
         });
-        app.post('/sighup', attachDB, function (req, res) {
-            console.log(req.body);
+        app.post('/login', attachDB, function (req, res, next) {
+            UserController.authorize(req, res, next);
         });
-        app.all('/:id', attachDB, function(req, res, next) {
-            PageController.run(req, res, next);
+        app.post('/sighup', attachDB, function (req, res, next) {
+            UserController.signUp(req, res, next);
         });
-        app.all('/', attachDB, function(req, res, next) {
-            PageController.runRoot(req, res, next);
+        app.get('/:id/add', attachDB, function(req, res, next) {
+            PageController.addPage(req, res, next, false);
         });
-
+        app.post('/:id/add', upload.single('pageImage'), attachDB, function(req, res, next) {
+            PageController.addPage(req, res, next, true);
+        });
+        app.post('/:root/delete/:id', attachDB, function(req, res, next) {
+            PageController.deletePage(req, res, next);
+        });
+        app.get('/admin/:id', attachDB, function (req, res, next) {
+            PageController.run(req, res, next, false, true);
+        });
+        app.get('/admin', attachDB, function (req, res, next) {
+            PageController.run(req, res, next, true, true);
+        });
+        app.get('/:id', attachDB, function(req, res, next) {
+            PageController.run(req, res, next, false, false);
+        });
+        app.get('/', attachDB, function(req, res, next) {
+            PageController.run(req, res, next, true, false);
+        });
+        app.get('*', attachDB, function(req, res, next) {
+            PageController.run(req, res, next, false, false);
+        });
         app.listen(config.port, function() {
             console.log(
                 'Successfully connected to mongodb://' + config.mongo.host + ':' + config.mongo.port,
