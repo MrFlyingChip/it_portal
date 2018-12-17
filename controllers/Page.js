@@ -41,16 +41,6 @@ module.exports = BaseController.extend({
             }
         });
     },
-    checkForRootPage: function(callback){
-        const root = {pageName: 'Home'};
-        model.getOneItem(root, function (err, rootPage) {
-            if(!rootPage){
-                model.insert({pageName: 'Home', pageType: "container"}, callback);
-            } else {
-                callback();
-            }
-        });
-    },
     getContent: function(obj, callback) {
         let self = this;
         this.content = {};
@@ -133,44 +123,53 @@ module.exports = BaseController.extend({
             }
         });
     },
+    renderUpdatePage: function(req, res, next){
+        model.setDB(req.db);
+        model.renderUpdatePage(req.params['id'])
+            .then(value => {
+                BaseController.render(req, res, value);
+            })
+            .catch(error => {
+                console.log(error);
+                res.redirect('/');
+            })
+    },
+
     deletePage: function (req, res, next) {
         model.setDB(req.db);
-        this.checkForRootPage(() => {
-            if(!req.body || !req.session || !req.session.username) res.redirect('/');
-            model.remove(req.params['id'], function (err, newPage) {
+        model.deletePage(req.params['id'], req.body.session)
+            .then(value => {
                 if(req.session.role === "ADMIN"){
                     res.redirect('/admin/' + req.params['root']);
                 } else {
                     res.redirect('/' + req.params['root']);
                 }
-            });
-        });
-    },
-    loginPage: function (req, res, next) {
-        model.setDB(req.db);
-        let self = this;
-        this.checkForRootPage(() => {
-           if(req.session && req.session.username){
-               res.redirect('/');
-           } else {
-               const page = {pageType: 'loginPage', title: 'Add Page'};
-               BaseController.render(req, res, page);
-           }
-        });
-    },
-    accountPage: function (req, res, next) {
-        model.setDB(req.db);
-        this.checkForRootPage(() => {
-            if(!req.session || !req.session.username){
+            })
+            .catch(error => {
+                console.log(error);
                 res.redirect('/');
-            } else {
-                const page = {pageType: 'container', title: 'Account', pageName: 'Account'};
-                model.getlist(function(err, records) {
-                    page.children = records;
-                    BaseController.render(req, res, page);
-                }, { created: req.session.username });
-
-            }
-        });
+            });
+    },
+    renderLoginPage: function (req, res, next) {
+        model.setDB(req.db);
+        model.renderLoginPage(req.session)
+            .then(value => {
+                BaseController.render(req, res, value);
+            })
+            .catch(error => {
+                console.log(error);
+                res.redirect('/');
+            })
+    },
+    renderAccountPage: function (req, res, next) {
+        model.setDB(req.db);
+        model.renderAccountPage(req.session)
+            .then(value => {
+                BaseController.render(req, res, value);
+            })
+            .catch(error => {
+                console.log(error);
+                res.redirect('/');
+            })
     },
 });

@@ -12,7 +12,7 @@ const express = require('express'),
     session = require('express-session'),
     errorhandler = require('errorhandler'),
     PageController = require('./controllers/Page'),
-    UserController = require('./controllers/User');
+    routes = require('./routes');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -52,18 +52,9 @@ MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port +
         app.get('/404', attachDB, function (req, res) {
             res.redirect('/');
         });
-        app.get('/logout', attachDB, function (req, res) {
-            req.session.destroy();
-            res.redirect('/');
-        });
+        routes(app, upload, attachDB);
         app.get('/login', attachDB, function (req, res) {
             PageController.loginPage(req, res);
-        });
-        app.post('/login', attachDB, function (req, res, next) {
-            UserController.authorize(req, res, next);
-        });
-        app.post('/sighup', attachDB, function (req, res, next) {
-            UserController.signUp(req, res, next);
         });
         app.get('/account', attachDB, function (req, res) {
             PageController.accountPage(req, res);

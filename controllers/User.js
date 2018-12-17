@@ -6,53 +6,31 @@ module.exports = BaseController.extend({
     modelName: "users",
     content: null,
     authorize: function(req, res, next) {
-        if(req.session &&
-            req.session.username &&
-            req.session.role){
-            res.redirect('/');
-        }
         model.setDB(req.db);
-        if(req.body){
-            model.getOneItemObj({username: req.body.username}, function (err, user) {
-                if(user && user.password === req.body.password){
-                    req.session.username = user.username;
-                    req.session.role = user.role;
-                    req.session.save();
-                    res.redirect('/');
-                } else {
-                    const data = {pageType: "loginPage", title:"Login"};
-                    if(!user){
-                        data.errorLogInUsername = "No such user!";
-                    } else if(user.password !== req.body.password){
-                        data.errorLogInPassword = "Wrong password";
-                    }
-                    BaseController.render(req, res, data);
-                }
+        model.logIn(req.body, req.body.session)
+            .then(value => {
+                req.session.username = value.username;
+                req.session.role = value.role;
+                req.session.save();
+                res.redirect('/');
             })
-        }
+            .catch(error => {
+                console.log(error);
+                BaseController.render(req, res, error);
+            });
     },
     signUp: function (req, res, next) {
         model.setDB(req.db);
-        if(!req.body || !req.body.username || !req.body.password || !req.body.email){
-            BaseController.render(req, res, {errorSignUp: "Invalid data!", pageType: "loginPage", title:"Login"});
-        }
-
-        model.getOneItemObj({username: req.body.username}, function (err, usernameUser) {
-            if(usernameUser){
-                BaseController.render(req, res, {errorSignUpUsername: "Username is already used!", pageType: "loginPage", title:"Login"});
-            } else {
-                model.getOneItemObj({email: req.body.email}, function (err, emailUser) {
-                    if(emailUser){
-                        BaseController.render(req, res, {errorSignUpEmail: "Email is already used!", pageType: "loginPage", title:"Login"});
-                    } else {
-                        model.insert({email: req.body.email, password: req.body.password, username: req.body.username, role: "USER"});
-                        req.session.username = req.body.username;
-                        req.session.role = "USER";
-                        req.session.save();
-                        res.redirect('/');
-                    }
-                })
-            }
-        })
+        model.signUp(req.body)
+            .then(value => {
+                req.session.username = value.username;
+                req.session.role = value.role;
+                req.session.save();
+                res.redirect('/');
+            })
+            .catch(error => {
+                console.log(error);
+                BaseController.render(req, res, error);
+            })
     }
 });
