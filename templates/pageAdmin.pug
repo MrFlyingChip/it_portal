@@ -3,7 +3,7 @@ block content
     if (parentID)
         p
             a(href="/" + parentID) <- Back
-    if creator === username
+    if creator === username || role === "ADMIN"
         p
             a(href="/" + ID + "/update") Update this page
     h3 #{pageName}
